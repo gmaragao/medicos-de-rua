@@ -21,8 +21,11 @@ exports._validateDoctor = async (req, res) => {
       newDoctor.password = hashPassword;
       await new Doctor(newDoctor)
         .save()
-        .then(() => {
-          res.send('cadastrado com sucesso');
+        .then(async () => {
+          const user = await Doctor.findOne({ email });
+          const token = jwt.sign({ _id: user.id }, process.env.JWT_KEY);
+          res.header('auth-token', token);
+          res.send('Cadastrado com sucesso!');
         })
         .catch(err => console.log(err));
     });
@@ -43,7 +46,7 @@ exports._login = async (req, res) => {
     if (!validPassword) {
       res.status(400).send('Senha incorreta');
     }
-    const token = jwt.sign({ _id: user.id }, 'vascooooooooo');
-    res.header('auth-token', token).send(token);
+    const token = jwt.sign({ _id: user.id }, process.env.JWT_KEY);
+    res.header('auth-token', token);
   }
 };
