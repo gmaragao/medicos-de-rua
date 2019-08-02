@@ -2,7 +2,7 @@ const Doctor = require('../models/Doctor');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-exports._validateDoctor = async (req, res) => {
+exports._validateDoctor = async (req, res, next) => {
   const email = req.body.email;
   const doctor = await Doctor.findOne({ email });
   if (!doctor) {
@@ -13,6 +13,13 @@ exports._validateDoctor = async (req, res) => {
       password,
       email
     };
+    if (password.length < 6) {
+      res.status(202);
+      res.send(
+        'Senha curta. Por favor inserir senha de no mínimo 6 caracteres'
+      );
+      next();
+    }
     const salt = await bcrypt.genSalt(10);
     await bcrypt.hash(newDoctor.password, salt, async (err, hashPassword) => {
       if (err) {
@@ -24,7 +31,8 @@ exports._validateDoctor = async (req, res) => {
         .then(async () => {
           const user = await Doctor.findOne({ email });
           const token = jwt.sign({ _id: user.id }, process.env.JWT_KEY);
-          res.header('auth-token', token);
+          res.header('authToken', token);
+          res.status(201);
           res.send('Cadastrado com sucesso!');
         })
         .catch(err => console.log(err));
@@ -47,6 +55,8 @@ exports._login = async (req, res) => {
       res.status(400).send('Senha incorreta');
     }
     const token = jwt.sign({ _id: user.id }, process.env.JWT_KEY);
-    res.header('auth-token', token);
+    res.header('authToken', token);
+    res.status(201);
+    res.send('Login feito com sucesso!');
   }
 };
