@@ -6,7 +6,7 @@ router.get('/', (req, res) => {
   res.send('HOME');
 });
 
-router.post('/medico', DoctorController._createDoctor);
+router.post('/doctor', DoctorController._createDoctor);
 router.post('/login', DoctorController._login);
 router.get('/autenticado', verify, (req, res) => {
   res.json({
